@@ -1,4 +1,4 @@
-def pipelineVersion='1.1.3'
+def pipelineVersion='1.1.4'
 println "Pipeline version: ${pipelineVersion}"
 /*
  * This is a vanilla Jenkins pipeline that relies on the Jenkins kubernetes plugin to dynamically provision agents for
@@ -161,6 +161,9 @@ spec:
           value: /home/devops
       envFrom:
         - configMapRef:
+            name: gitops-cd-secret
+            optional: true
+        - configMapRef:
             name: gitops-repo
             optional: true
         - secretRef:
@@ -227,6 +230,7 @@ spec:
             }
         }
         container(name: 'node', shell: '/bin/bash') {
+            stage('Tag release') {
                 sh '''#!/bin/bash
                     set -x
                     set -e
@@ -285,6 +289,7 @@ spec:
 
                     cat ./env-config
                 '''
+            }
         }
         container(name: 'buildah', shell: '/bin/bash') {
             stage('Build image') {
